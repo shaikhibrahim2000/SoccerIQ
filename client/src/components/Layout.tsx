@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Trophy, Shirt, Users, Menu, Bell, User } from 'lucide-react';
+import { LayoutDashboard, Trophy, Shirt, Users, Menu, Bell, User, ArrowRightLeft, CalendarPlus } from 'lucide-react';
 import { useState } from 'react';
 
 const Layout = () => {
@@ -11,6 +11,8 @@ const Layout = () => {
         { name: 'Leagues', href: '/leagues', icon: Trophy },
         { name: 'Teams', href: '/teams', icon: Shirt },
         { name: 'Players', href: '/players', icon: Users },
+        { name: 'Matches', href: '/matches', icon: CalendarPlus },
+        { name: 'Head-to-Head', href: '/head-to-head', icon: ArrowRightLeft },
     ];
 
     return (
@@ -22,7 +24,9 @@ const Layout = () => {
                 </div>
                 <nav className="mt-8 px-4 space-y-2">
                     {navigation.map((item) => {
-                        const isActive = location.pathname === item.href || (item.href !== '/' && location.pathname.startsWith(item.href));
+                        const isActive = item.href === '/' 
+                            ? location.pathname === '/' 
+                            : location.pathname === item.href || location.pathname.startsWith(item.href + '/');
                         return (
                             <Link
                                 key={item.name}

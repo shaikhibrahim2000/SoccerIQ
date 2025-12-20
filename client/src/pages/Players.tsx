@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { playersService, teamsService, positionsService } from '../services/api';
-import { Plus, Loader2, Users } from 'lucide-react';
+import { Plus, Loader2, Users, Trash2 } from 'lucide-react';
 
 interface Player {
     player_id: number;
@@ -87,6 +87,16 @@ const Players = () => {
         return teams.find(t => t.team_id === id)?.team_name || 'Unknown Team';
     };
 
+    const handleDelete = async (playerId: number) => {
+        if (!window.confirm('Delete this player? This cannot be undone.')) return;
+        try {
+            await playersService.delete(playerId);
+            setPlayers((prev) => prev.filter((player) => player.player_id !== playerId));
+        } catch (error) {
+            console.error('Error deleting player:', error);
+        }
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -140,6 +150,14 @@ const Players = () => {
                                             <div className="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-bold text-lg">
                                                 {player.player_name.charAt(0)}
                                             </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(player.player_id)}
+                                                className="p-2 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                                aria-label={`Delete ${player.player_name}`}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

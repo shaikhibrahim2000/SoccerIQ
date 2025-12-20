@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { leaguesService } from '../services/api';
-import { Plus, Loader2, Globe, Trophy } from 'lucide-react';
+import { Plus, Loader2, Globe, Trophy, Trash2 } from 'lucide-react';
 
 interface League {
     league_id: number;
@@ -42,6 +42,16 @@ const Leagues = () => {
             console.error('Error creating league:', error);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (leagueId: number) => {
+        if (!window.confirm('Delete this league? This cannot be undone.')) return;
+        try {
+            await leaguesService.delete(leagueId);
+            setLeagues((prev) => prev.filter((league) => league.league_id !== leagueId));
+        } catch (error) {
+            console.error('Error deleting league:', error);
         }
     };
 
@@ -92,6 +102,14 @@ const Leagues = () => {
                                                 <div className="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-bold text-lg">
                                                     {league.league_name.charAt(0)}
                                                 </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(league.league_id)}
+                                                    className="p-2 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                                    aria-label={`Delete ${league.league_name}`}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
