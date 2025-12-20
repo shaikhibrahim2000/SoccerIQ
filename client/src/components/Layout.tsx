@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Trophy, Shirt, Users, Menu, Bell, User, ArrowRightLeft, CalendarPlus } from 'lucide-react';
+import { LayoutDashboard, Trophy, Shirt, Users, Menu, Bell, User, ArrowRightLeft, CalendarPlus, BarChart3, Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 const Layout = () => {
@@ -11,7 +11,10 @@ const Layout = () => {
         { name: 'Leagues', href: '/leagues', icon: Trophy },
         { name: 'Teams', href: '/teams', icon: Shirt },
         { name: 'Players', href: '/players', icon: Users },
+        { name: 'Seasons', href: '/seasons', icon: Calendar },
         { name: 'Matches', href: '/matches', icon: CalendarPlus },
+        { name: 'Player Stats', href: '/player-stats', icon: BarChart3 },
+        { name: 'League Stats', href: '/league-stats', icon: Trophy },
         { name: 'Head-to-Head', href: '/head-to-head', icon: ArrowRightLeft },
     ];
 

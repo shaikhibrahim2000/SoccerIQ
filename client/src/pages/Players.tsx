@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { playersService, teamsService, positionsService } from '../services/api';
+import { playersService, teamsService, positionsService, seasonsService } from '../services/api';
 import { Plus, Loader2, Users, Trash2 } from 'lucide-react';
 
 interface Player {
@@ -22,17 +22,24 @@ interface Position {
     position_category: string;
 }
 
+interface Season {
+    season_id: number;
+    season_year: string;
+}
+
 const Players = () => {
     const [players, setPlayers] = useState<Player[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
     const [positions, setPositions] = useState<Position[]>([]);
+    const [seasons, setSeasons] = useState<Season[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         player_name: '',
         position_id: '',
-        team_id: ''
+        team_id: '',
+        season_id: ''
     });
 
     useEffect(() => {
@@ -41,14 +48,16 @@ const Players = () => {
 
     const fetchData = async () => {
         try {
-            const [playersRes, teamsRes, positionsRes] = await Promise.all([
+            const [playersRes, teamsRes, positionsRes, seasonsRes] = await Promise.all([
                 playersService.getAll(),
                 teamsService.getAll(),
-                positionsService.getAll()
+                positionsService.getAll(),
+                seasonsService.getAll()
             ]);
             setPlayers(playersRes.data);
             setTeams(teamsRes.data);
             setPositions(positionsRes.data);
+            setSeasons(seasonsRes.data);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -69,9 +78,10 @@ const Players = () => {
             await playersService.create({
                 player_name: formData.player_name,
                 default_position_id: parseInt(formData.position_id),
-                team_id: parseInt(formData.team_id)
+                team_id: parseInt(formData.team_id),
+                season_id: formData.season_id ? parseInt(formData.season_id) : undefined
             });
-            setFormData({ player_name: '', position_id: '', team_id: '' });
+            setFormData({ player_name: '', position_id: '', team_id: '', season_id: '' });
             fetchData();
         } catch (error: any) {
             const errorMessage = error?.response?.data?.error || error?.message || 'Failed to add player. Please try again.';
@@ -237,6 +247,26 @@ const Players = () => {
                                 {teams.map((team) => (
                                     <option key={team.team_id} value={team.team_id}>
                                         {team.team_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="season_id" className="block text-sm font-medium text-gray-700 mb-1">
+                                Season
+                            </label>
+                            <select
+                                id="season_id"
+                                name="season_id"
+                                value={formData.season_id}
+                                onChange={(e) => setFormData({ ...formData, season_id: e.target.value })}
+                                className="block w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2.5 border transition-colors bg-white"
+                            >
+                                <option value="">Select a season (optional)</option>
+                                {seasons.map((season) => (
+                                    <option key={season.season_id} value={season.season_id}>
+                                        {season.season_year}
                                     </option>
                                 ))}
                             </select>

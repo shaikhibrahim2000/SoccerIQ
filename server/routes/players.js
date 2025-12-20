@@ -23,7 +23,8 @@ router.post('/', async (req, res) => {
         date_of_birth,
         nationality,
         height_cm,
-        foot
+        foot,
+        season_id
     } = req.body;
 
     // Use default_position_id if provided, otherwise fall back to position_id
@@ -47,6 +48,23 @@ router.post('/', async (req, res) => {
         .select();
 
     if (error) return res.status(500).json({ error: error.message });
+
+    if (season_id) {
+        const today = new Date().toISOString().slice(0, 10);
+        const player = Array.isArray(data) ? data[0] : data;
+        const { error: rosterError } = await supabase
+            .from('team_rosters')
+            .insert([{
+                team_id,
+                player_id: player.player_id,
+                season_id,
+                join_date: today,
+                contract_status: 'Active',
+            }]);
+
+        if (rosterError) return res.status(500).json({ error: rosterError.message });
+    }
+
     res.status(201).json(data);
 });
 

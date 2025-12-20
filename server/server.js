@@ -17,6 +17,7 @@ app.use('/api/positions', require('./routes/positions'));
 app.use('/api/head-to-head', require('./routes/headToHead'));
 app.use('/api/seasons', require('./routes/seasons'));
 app.use('/api/matches', require('./routes/matches'));
+app.use('/api/player-stats', require('./routes/playerStats'));
 
 app.get('/', (req, res) => {
     res.send('Football Analysis Platform API Running');

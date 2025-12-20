@@ -13,6 +13,18 @@ const normalizeRole = (role, fallback) => {
     return String(role).trim().toLowerCase();
 };
 
+// GET all matches (lightweight list for dropdowns)
+router.get('/', async (req, res) => {
+    const { data, error } = await supabase
+        .from('matches')
+        .select('match_id, match_date, match_time, venue')
+        .order('match_date', { ascending: false })
+        .limit(200);
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
 // POST record a match and its two team rows
 router.post('/', async (req, res) => {
     const {

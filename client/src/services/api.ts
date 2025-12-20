@@ -26,6 +26,8 @@ export const teamsService = {
 
 export const seasonsService = {
     getAll: () => api.get('/seasons'),
+    create: (data: { league_id: number; season_year: string; start_date: string; end_date: string }) => api.post('/seasons', data),
+    delete: (id: number) => api.delete(`/seasons/${id}`),
 };
 
 export const playersService = {
@@ -35,6 +37,7 @@ export const playersService = {
 };
 
 export const matchesService = {
+    getAll: () => api.get('/matches'),
     record: (data: {
         season_id: number;
         match_date: string;
@@ -49,8 +52,19 @@ export const matchesService = {
     }) => api.post('/matches', data),
 };
 
+export const playerStatsService = {
+    getAll: () => api.get('/player-stats'),
+    create: (data: Record<string, any>) => api.post('/player-stats', data),
+};
+
 export const headToHeadService = {
     getSummary: (teamA: number, teamB: number) => api.get('/head-to-head', { params: { teamA, teamB } }),
+};
+
+export const leagueStatsService = {
+    topScorers: (leagueId: number) => api.get(`/leagues/${leagueId}/top-scorers`),
+    topAssists: (leagueId: number) => api.get(`/leagues/${leagueId}/top-assists`),
+    table: (leagueId: number) => api.get(`/leagues/${leagueId}/table`),
 };
 
 export default api;
