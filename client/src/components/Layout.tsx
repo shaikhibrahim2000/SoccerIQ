@@ -23,7 +23,7 @@ const Layout = () => {
             {/* Sidebar */}
             <div className={`fixed inset-y-0 left-0 z-30 w-64 bg-primary text-white transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex items-center justify-center h-16 bg-primary-hover border-b border-gray-700 shadow-md">
-                    <h1 className="text-2xl font-bold tracking-wider uppercase text-blue-400">Pitch<span className="text-white">Admin</span></h1>
+                    <h1 className="text-2xl font-bold tracking-wider uppercase text-blue-400">Soccer<span className="text-white">IQ</span></h1>
                 </div>
                 <nav className="mt-8 px-4 space-y-2">
                     {navigation.map((item) => {

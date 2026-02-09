@@ -180,3 +180,4 @@ Requires additional tables:
 3. **Create the table in Supabase** database
 4. **Let me know when ready** and I can help implement the comparison feature!
 
+

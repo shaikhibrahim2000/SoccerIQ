@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { leaguesService, teamsService, playersService, positionsService } from '../services/api';
-import { Trophy, Shirt, Users, TrendingUp, ArrowRight, Globe, UsersRound } from 'lucide-react';
+import { Trophy, Shirt, Users, ArrowRight, Globe, UsersRound } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 interface DashboardStats {
@@ -15,12 +15,14 @@ interface DashboardStats {
 const Dashboard = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         fetchDashboardStats();
     }, []);
 
     const fetchDashboardStats = async () => {
+        setError(null);
         try {
             const [leaguesRes, teamsRes, playersRes, positionsRes] = await Promise.all([
                 leaguesService.getAll(),
@@ -34,8 +36,9 @@ const Dashboard = () => {
             const players = playersRes.data;
             const positions = positionsRes.data;
 
-            // Group players by position category
-            const positionMap = new Map(positions.map((p: any) => [p.position_id, p.position_category]));
+            // Group players by position category (API returns untyped data, so we type the entries)
+            const positionEntries = (positions as { position_id: number; position_category: string }[]).map((p) => [p.position_id, p.position_category] as [number, string]);
+            const positionMap = new Map<number, string>(positionEntries);
             const playersByPositionMap = new Map<string, number>();
             
             players.forEach((player: any) => {
@@ -65,8 +68,12 @@ const Dashboard = () => {
                 playersByPosition,
                 teamsByLeague
             });
-        } catch (error) {
-            console.error('Error fetching dashboard stats:', error);
+        } catch (err: unknown) {
+            console.error('Error fetching dashboard stats:', err);
+            const message = err && typeof err === 'object' && 'code' in err && (err as { code?: string }).code === 'ERR_NETWORK'
+                ? 'Cannot reach the server. Start the backend with: cd server && npm start'
+                : 'Failed to load dashboard data. Check the server and Supabase configuration.';
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -81,7 +88,19 @@ const Dashboard = () => {
     }
 
     if (!stats) {
-        return <div className="text-center text-gray-500">Failed to load dashboard data</div>;
+        return (
+            <div className="text-center py-12 px-4">
+                <p className="text-gray-600 mb-4">{error ?? 'Failed to load dashboard data'}</p>
+                <button
+                    type="button"
+                    onClick={() => { setLoading(true); fetchDashboardStats(); }}
+                    className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
+                    <Loader2 className="h-4 w-4" />
+                    Retry
+                </button>
+            </div>
+        );
     }
 
     const statCards = [
@@ -111,16 +130,30 @@ const Dashboard = () => {
         }
     ];
 
+    // High-quality football/soccer imagery (Unsplash - free to use)
+    const heroBg = 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1600&q=80';
+    const pitchTexture = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=60';
+
     return (
-        <div className="space-y-8">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
-                <p className="mt-1 text-sm text-gray-500">Overview of your football analysis platform</p>
+        <div className="space-y-8 relative">
+            {/* Hero section with soccer background */}
+            <div
+                className="relative rounded-2xl overflow-hidden min-h-[200px] md:min-h-[240px] flex items-end"
+                style={{
+                    backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.75) 50%, rgba(15, 23, 42, 0.6) 100%), url(${heroBg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-indigo-900/30 via-transparent to-transparent" />
+                <div className="relative w-full p-6 md:p-8">
+                    <h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight drop-shadow-lg">Dashboard</h1>
+                    <p className="mt-1 text-sm md:text-base text-white/90">Overview of your football analysis platform</p>
+                </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
                 {statCards.map((card) => {
                     const Icon = card.icon;
                     return (
@@ -147,10 +180,17 @@ const Dashboard = () => {
                 })}
             </div>
 
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Charts Section - with subtle pitch texture */}
+            <div
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative rounded-2xl overflow-hidden"
+                style={{
+                    backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.97), rgba(248,250,252,0.98)), url(${pitchTexture})`,
+                    backgroundSize: '320px auto',
+                    backgroundPosition: 'right bottom',
+                }}
+            >
                 {/* Players by Position */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-lg font-semibold text-gray-900">Players by Position</h2>
@@ -160,7 +200,7 @@ const Dashboard = () => {
                     </div>
                     <div className="space-y-4">
                         {stats.playersByPosition.length > 0 ? (
-                            stats.playersByPosition.map((item, index) => (
+                            stats.playersByPosition.map((item) => (
                                 <div key={item.category} className="flex items-center">
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-1">
@@ -185,7 +225,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Teams by League */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-lg font-semibold text-gray-900">Teams by League</h2>
@@ -195,7 +235,7 @@ const Dashboard = () => {
                     </div>
                     <div className="space-y-4">
                         {stats.teamsByLeague.length > 0 ? (
-                            stats.teamsByLeague.map((item, index) => (
+                            stats.teamsByLeague.map((item) => (
                                 <div key={item.league_name} className="flex items-center">
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-1">
@@ -221,9 +261,18 @@ const Dashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div
+                className="relative rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden bg-white"
+                style={{
+                    backgroundImage: `linear-gradient(105deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.98) 70%, rgba(239,246,255,0.4) 100%)`,
+                }}
+            >
+                <div
+                    className="absolute right-0 top-0 w-48 h-full opacity-[0.07] bg-cover bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url(${heroBg})` }}
+                />
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 relative">Quick Actions</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative">
                     <Link
                         to="/leagues"
                         className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
@@ -255,4 +304,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 
